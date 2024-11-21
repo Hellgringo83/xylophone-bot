@@ -1,31 +1,46 @@
-/** 
+/**
  *  Einbinden spezieller Libraries, die wir benötigen
  */
 #include <Arduino.h>
 #include <Servo.h>
 
-
-/** 
+/**
  *  Definition der Noten-Positionen (Winkel)
  */
-const int C = 120;
-const int D = 110;
-const int E = 102;
-const int F = 93;
-const int G = 85;
-const int A = 75;
-const int B = 68; // manchmal auch als "H" bezeichnet!
-const int H = 68;
-const int C1 = 58;
+// const int C = 120;
+// const int D = 110;
+// const int E = 102;
+// const int F = 93;
+// const int G = 85;
+// const int A = 75;
+// const int B = 68; // manchmal auch als "H" bezeichnet!
+// const int H = 68;
+// const int C1 = 58;
 
-const int TonOffset = -10;
+enum eNOTEN
+{
+  C,
+  D,
+  E,
+  F,
+  G,
+  A,
+  B,
+  H = B,
+  C1,
+  NOTE_LAST
+};
+
+const int iC = 100;
+const int iC1 = 45;
+
+int16_t g_arrNote[NOTE_LAST];
 
 /**
  * Variable zum Speichern des Tempo/Taktes
  * Diese wird zur Laufzeit überschrieben mit dem tempo aus dem Melodie-Array
  */
 int takt = 100;
-
 
 /**
  * spezielle Note, welche eine Pause repräsentiert
@@ -38,7 +53,7 @@ const int PAUSE_5 = 1050;
 const int PAUSE_6 = 1060;
 const int PAUSE_7 = 1070;
 
-int pause_1 = 50; 
+int pause_1 = 50;
 int pause_2 = 100;
 int pause_3 = 200;
 int pause_4 = 300;
@@ -46,24 +61,22 @@ int pause_5 = 400;
 int pause_6 = 500;
 int pause_7 = 600;
 
-
 /**
  * Array mit Noten = Melodie
- * 
+ *
  * An erster Stelle steht das Tempo/der Takt
  */
 // Test
-//const int MELODIE[] = { 1000, C, D, E, F, G, A, B, C1 };
+const int MELODIE[] = { 1000, C, D, E, F, G, A, B, C1 };
 
 // Melodie: Star Wars Imperial March, Part 1
-//const int MELODIE[] = { 250, E, E, E, C, G, E, C, G, E, PAUSE_4, B, B, B, C1, G, E, C, G, E };
+// const int MELODIE[] = { 250, E, E, E, C, G, E, C, G, E, PAUSE_4, B, B, B, C1, G, E, C, G, E };
 
 // Scooter
-//const int MELODIE[] = { 50, E, PAUSE_2, H, PAUSE_2, E, PAUSE_2, H, A, G, PAUSE_2, G, PAUSE_2, G, PAUSE_4, H, G, PAUSE_2, H, PAUSE_2, G, PAUSE_2, H, G, E, PAUSE_2, E, PAUSE_2, E };
+// const int MELODIE[] = { 50, E, PAUSE_2, H, PAUSE_2, E, PAUSE_2, H, A, G, PAUSE_2, G, PAUSE_2, G, PAUSE_4, H, G, PAUSE_2, H, PAUSE_2, G, PAUSE_2, H, G, E, PAUSE_2, E, PAUSE_2, E };
 
 // Star Wars Intro, Part 1
-const int MELODIE[] = { 10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D };
-
+//const int MELODIE[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D};
 
 /**
  * dynamische Werte
@@ -71,16 +84,14 @@ const int MELODIE[] = { 10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAU
 const int pauseWinkelVertikal = 173;
 const int pauseWinkelHorizontal = 90;
 
-const int startWinkelVertikal = 60;
-const int winkelZumSchlagen = 40;
-
+const int startWinkelVertikal = 68;
+const int winkelZumSchlagen = 30;
 
 /**
  * Initialisieren der Servo-Motoren
  */
 Servo servoHorizontal;
 Servo servoVertikal;
-
 
 /**
  * Definition der Pins des Arduino, wo die Servos und der taster angeschlossen sind
@@ -93,16 +104,17 @@ const int buttonPin = 2;
  * Eigene Funktionen
  */
 
-void spieleTon(int ton) {
+void spieleTon(int ton)
+{
 
   // den aktuellen Winkel des Servos auslesen
-  //int aktuellerWinkel = servoHorizontal.read();
-  
-  servoHorizontal.write(ton + TonOffset);
+  // int aktuellerWinkel = servoHorizontal.read();
 
-  //delay(abs(ton - aktuellerWinkel) * 6);
+  servoHorizontal.write(g_arrNote[ton]);
+
+  // delay(abs(ton - aktuellerWinkel) * 6);
   delay(150);
-  
+
   // Note anschlagen
   servoVertikal.write(startWinkelVertikal - winkelZumSchlagen);
   delay(20);
@@ -110,14 +122,16 @@ void spieleTon(int ton) {
   delay(20);
 }
 
-void spieleEnde() {
+void spieleEnde()
+{
   servoHorizontal.write(C);
   delay(100);
   servoVertikal.write(startWinkelVertikal - 8);
   delay(100);
-  for (int winkel = C; winkel >= C1; winkel--) {
-      servoHorizontal.write(winkel);
-      delay(5);
+  for (int winkel = C; winkel >= C1; winkel--)
+  {
+    servoHorizontal.write(winkel);
+    delay(5);
   }
   delay(500);
   servoVertikal.write(startWinkelVertikal + winkelZumSchlagen);
@@ -128,32 +142,41 @@ void spieleEnde() {
   delay(300);
 }
 
-
-
 /**
  * setup() wird beim Einschalten des Arduino einmalig aufgerufen
  */
-void setup() {
+void setup()
+{
+  Serial.begin(115200);
   // initialen Servo-Wert setzen
   servoHorizontal.write(pauseWinkelHorizontal);
   servoVertikal.write(pauseWinkelVertikal);
-  
+
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
-} 
 
+  // initialisiere Noten array
+  float fSpace = (iC - iC1) / C1;
+  for (int i = 0; i < NOTE_LAST; i++)
+  {
+    g_arrNote[i] = iC - (i * fSpace);
+    Serial.println(g_arrNote[i]);
+  }
+}
 
 /**
  * loop() wird in einer Schleife aufgerufen, solange der Arduino Strom hat
  */
-void loop() {
-  
+void loop()
+{
+
   // Lesen des Wertes des Drucktasters
   int buttonState = digitalRead(buttonPin);
 
   // Überprüfen, ob der Drucktaster gedrückt ist. Wenn dies der Fall ist, ist der ButtonState auf HIGH
-  if (buttonState == HIGH) {
-  
+  if (buttonState == HIGH)
+  {
+
     // Servos zu den Arduino Pins zuordnen
     servoHorizontal.attach(servoPinHorizontal);
     servoVertikal.attach(servoPinVertikal);
@@ -161,56 +184,67 @@ void loop() {
     // Servos auf Startposition fahren
     servoHorizontal.write(pauseWinkelHorizontal);
     delay(15);
-    for (int winkel = pauseWinkelVertikal; winkel >= startWinkelVertikal; winkel--) {
-        servoVertikal.write(winkel);
-        delay(15);
+    for (int winkel = pauseWinkelVertikal; winkel >= startWinkelVertikal; winkel--)
+    {
+      servoVertikal.write(winkel);
+      delay(15);
     }
 
     takt = MELODIE[0]; // erster Wert im Array
 
     delay(500);
-    
-    for (int position = 1; position < (sizeof(MELODIE)/sizeof(int)); position++) {
+
+    for (int position = 1; position < (sizeof(MELODIE) / sizeof(int)); position++)
+    {
       int ton = MELODIE[position];
-  
-      if (ton == PAUSE_1) {
+
+      if (ton == PAUSE_1)
+      {
         delay(pause_1);
       }
-      else if (ton == PAUSE_2) {
+      else if (ton == PAUSE_2)
+      {
         delay(pause_2);
       }
-      else if (ton == PAUSE_3) {
+      else if (ton == PAUSE_3)
+      {
         delay(pause_3);
       }
-      else if (ton == PAUSE_4) {
+      else if (ton == PAUSE_4)
+      {
         delay(pause_4);
       }
-      else if (ton == PAUSE_5) {
+      else if (ton == PAUSE_5)
+      {
         delay(pause_5);
       }
-      else if (ton == PAUSE_6) {
+      else if (ton == PAUSE_6)
+      {
         delay(pause_6);
       }
-      else if (ton == PAUSE_7) {
+      else if (ton == PAUSE_7)
+      {
         delay(pause_7);
       }
-      else {
-        
+      else
+      {
+
         spieleTon(ton);
-  
+
         delay(takt);
       }
     }
 
     delay(pause_7);
-  
+
     spieleEnde();
 
     // Servos wieder zurück in Parkposition fahren
     servoHorizontal.write(pauseWinkelHorizontal);
-    for (int winkel = startWinkelVertikal; winkel <= pauseWinkelVertikal; winkel++) {
-        servoVertikal.write(winkel);
-        delay(15);
+    for (int winkel = startWinkelVertikal; winkel <= pauseWinkelVertikal; winkel++)
+    {
+      servoVertikal.write(winkel);
+      delay(15);
     }
 
     // Servos von den Arduino Pins trennen, damit diese nicht dauerhaft "brummen"
@@ -219,6 +253,3 @@ void loop() {
     servoVertikal.detach();
   }
 }
-
-
-
