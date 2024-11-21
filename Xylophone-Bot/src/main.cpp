@@ -67,7 +67,7 @@ int pause_7 = 600;
  * An erster Stelle steht das Tempo/der Takt
  */
 // Test
-const int MELODIE[] = { 1000, C, D, E, F, G, A, B, C1 };
+//const int MELODIE[] = { 1000, C, D, E, F, G, A, B, C1 };
 
 // Melodie: Star Wars Imperial March, Part 1
 // const int MELODIE[] = { 250, E, E, E, C, G, E, C, G, E, PAUSE_4, B, B, B, C1, G, E, C, G, E };
@@ -76,7 +76,7 @@ const int MELODIE[] = { 1000, C, D, E, F, G, A, B, C1 };
 // const int MELODIE[] = { 50, E, PAUSE_2, H, PAUSE_2, E, PAUSE_2, H, A, G, PAUSE_2, G, PAUSE_2, G, PAUSE_4, H, G, PAUSE_2, H, PAUSE_2, G, PAUSE_2, H, G, E, PAUSE_2, E, PAUSE_2, E };
 
 // Star Wars Intro, Part 1
-//const int MELODIE[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D};
+const int MELODIE[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D};
 
 /**
  * dynamische Werte
@@ -124,11 +124,11 @@ void spieleTon(int ton)
 
 void spieleEnde()
 {
-  servoHorizontal.write(C);
+  servoHorizontal.write(g_arrNote[C]);
   delay(100);
   servoVertikal.write(startWinkelVertikal - 8);
   delay(100);
-  for (int winkel = C; winkel >= C1; winkel--)
+  for (int winkel = g_arrNote[C]; winkel >= g_arrNote[C1]; winkel--)
   {
     servoHorizontal.write(winkel);
     delay(5);
