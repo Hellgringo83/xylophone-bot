@@ -1,6 +1,7 @@
 /** 
  *  Einbinden spezieller Libraries, die wir benötigen
  */
+#include <Arduino.h>
 #include <Servo.h>
 
 
@@ -17,6 +18,7 @@ const int B = 68; // manchmal auch als "H" bezeichnet!
 const int H = 68;
 const int C1 = 58;
 
+const int TonOffset = -10;
 
 /**
  * Variable zum Speichern des Tempo/Taktes
@@ -69,8 +71,8 @@ const int MELODIE[] = { 10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAU
 const int pauseWinkelVertikal = 173;
 const int pauseWinkelHorizontal = 90;
 
-const int startWinkelVertikal = 74;
-const int winkelZumSchlagen = 25;
+const int startWinkelVertikal = 60;
+const int winkelZumSchlagen = 40;
 
 
 /**
@@ -86,6 +88,46 @@ Servo servoVertikal;
 const int servoPinHorizontal = 10;
 const int servoPinVertikal = 9;
 const int buttonPin = 2;
+
+/**
+ * Eigene Funktionen
+ */
+
+void spieleTon(int ton) {
+
+  // den aktuellen Winkel des Servos auslesen
+  //int aktuellerWinkel = servoHorizontal.read();
+  
+  servoHorizontal.write(ton + TonOffset);
+
+  //delay(abs(ton - aktuellerWinkel) * 6);
+  delay(150);
+  
+  // Note anschlagen
+  servoVertikal.write(startWinkelVertikal - winkelZumSchlagen);
+  delay(20);
+  servoVertikal.write(startWinkelVertikal);
+  delay(20);
+}
+
+void spieleEnde() {
+  servoHorizontal.write(C);
+  delay(100);
+  servoVertikal.write(startWinkelVertikal - 8);
+  delay(100);
+  for (int winkel = C; winkel >= C1; winkel--) {
+      servoHorizontal.write(winkel);
+      delay(5);
+  }
+  delay(500);
+  servoVertikal.write(startWinkelVertikal + winkelZumSchlagen);
+  delay(100);
+  servoVertikal.write(startWinkelVertikal - winkelZumSchlagen);
+  delay(20);
+  servoVertikal.write(startWinkelVertikal);
+  delay(300);
+}
+
 
 
 /**
@@ -179,42 +221,4 @@ void loop() {
 }
 
 
-/**
- * Eigene Funktionen
- */
-
-void spieleTon(int ton) {
-
-  // den aktuellen Winkel des Servos auslesen
-  //int aktuellerWinkel = servoHorizontal.read();
-  
-  servoHorizontal.write(ton);
-
-  //delay(abs(ton - aktuellerWinkel) * 6);
-  delay(150);
-  
-  // Note anschlagen
-  servoVertikal.write(startWinkelVertikal - winkelZumSchlagen);
-  delay(20);
-  servoVertikal.write(startWinkelVertikal);
-  delay(20);
-}
-
-void spieleEnde() {
-  servoHorizontal.write(C);
-  delay(100);
-  servoVertikal.write(startWinkelVertikal - 8);
-  delay(100);
-  for (int winkel = C; winkel >= C1; winkel--) {
-      servoHorizontal.write(winkel);
-      delay(5);
-  }
-  delay(500);
-  servoVertikal.write(startWinkelVertikal + winkelZumSchlagen);
-  delay(100);
-  servoVertikal.write(startWinkelVertikal - winkelZumSchlagen);
-  delay(20);
-  servoVertikal.write(startWinkelVertikal);
-  delay(300);
-}
 
