@@ -53,6 +53,8 @@ const int PAUSE_5 = 1050;
 const int PAUSE_6 = 1060;
 const int PAUSE_7 = 1070;
 
+const int ENDE = 9999;
+
 int pause_1 = 50;
 int pause_2 = 100;
 int pause_3 = 200;
@@ -76,7 +78,7 @@ int pause_7 = 600;
 // const int MELODIE[] = { 50, E, PAUSE_2, H, PAUSE_2, E, PAUSE_2, H, A, G, PAUSE_2, G, PAUSE_2, G, PAUSE_4, H, G, PAUSE_2, H, PAUSE_2, G, PAUSE_2, H, G, E, PAUSE_2, E, PAUSE_2, E };
 
 // Star Wars Intro, Part 1
-const int MELODIE[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D};
+const int MELODIE[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, ENDE};
 
 /**
  * dynamische Werte
@@ -194,7 +196,8 @@ void loop()
 
     delay(500);
 
-    for (int position = 1; position < (sizeof(MELODIE) / sizeof(int)); position++)
+    int position = 1;
+    while(MELODIE[position] != ENDE)
     {
       int ton = MELODIE[position];
 
@@ -233,6 +236,7 @@ void loop()
 
         delay(takt);
       }
+      position++;
     }
 
     delay(pause_7);
