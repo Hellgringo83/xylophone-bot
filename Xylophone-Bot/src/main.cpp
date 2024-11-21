@@ -69,16 +69,21 @@ int pause_7 = 600;
  * An erster Stelle steht das Tempo/der Takt
  */
 // Test
-//const int MELODIE[] = { 1000, C, D, E, F, G, A, B, C1 };
+int TEST[] = {300, C, D, E, F, G, A, B, C1, ENDE};
 
 // Melodie: Star Wars Imperial March, Part 1
-// const int MELODIE[] = { 250, E, E, E, C, G, E, C, G, E, PAUSE_4, B, B, B, C1, G, E, C, G, E };
+int MARSCH[] = {250, E, E, E, C, G, E, C, G, E, PAUSE_4, B, B, B, C1, G, E, C, G, E, ENDE};
 
 // Scooter
-// const int MELODIE[] = { 50, E, PAUSE_2, H, PAUSE_2, E, PAUSE_2, H, A, G, PAUSE_2, G, PAUSE_2, G, PAUSE_4, H, G, PAUSE_2, H, PAUSE_2, G, PAUSE_2, H, G, E, PAUSE_2, E, PAUSE_2, E };
+int SCOOTER[] = {50, E, PAUSE_2, H, PAUSE_2, E, PAUSE_2, H, A, G, PAUSE_2, G, PAUSE_2, G, PAUSE_4, H, G, PAUSE_2, H, PAUSE_2, G, PAUSE_2, H, G, E, PAUSE_2, E, PAUSE_2, E, ENDE};
+
+int NARCOTIC[] = {1000, E, PAUSE_2, D, PAUSE_2, E, PAUSE_2, D, PAUSE_2, E, PAUSE_2, D, PAUSE_2, E, PAUSE_2, D, ENDE};
 
 // Star Wars Intro, Part 1
-const int MELODIE[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, ENDE};
+int START_WARS[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, ENDE};
+
+int *g_arrSongs[] = {TEST, NARCOTIC, MARSCH, SCOOTER, START_WARS, NULL};
+int g_iCurrentSong = 0;
 
 /**
  * dynamische Werte
@@ -166,6 +171,86 @@ void setup()
   }
 }
 
+void playSong(int *pSong)
+{
+  // Servos zu den Arduino Pins zuordnen
+  servoHorizontal.attach(servoPinHorizontal);
+  servoVertikal.attach(servoPinVertikal);
+
+  // Servos auf Startposition fahren
+  servoHorizontal.write(pauseWinkelHorizontal);
+  delay(15);
+  for (int winkel = pauseWinkelVertikal; winkel >= startWinkelVertikal; winkel--)
+  {
+    servoVertikal.write(winkel);
+    delay(15);
+  }
+
+  takt = pSong[0]; // erster Wert im Array
+
+  delay(500);
+
+  int position = 1;
+  while (pSong[position] != ENDE)
+  {
+    int ton = pSong[position];
+
+    if (ton == PAUSE_1)
+    {
+      delay(pause_1);
+    }
+    else if (ton == PAUSE_2)
+    {
+      delay(pause_2);
+    }
+    else if (ton == PAUSE_3)
+    {
+      delay(pause_3);
+    }
+    else if (ton == PAUSE_4)
+    {
+      delay(pause_4);
+    }
+    else if (ton == PAUSE_5)
+    {
+      delay(pause_5);
+    }
+    else if (ton == PAUSE_6)
+    {
+      delay(pause_6);
+    }
+    else if (ton == PAUSE_7)
+    {
+      delay(pause_7);
+    }
+    else
+    {
+
+      spieleTon(ton);
+
+      delay(takt);
+    }
+    position++;
+  }
+
+  delay(pause_7);
+
+  spieleEnde();
+
+  // Servos wieder zurück in Parkposition fahren
+  servoHorizontal.write(pauseWinkelHorizontal);
+  for (int winkel = startWinkelVertikal; winkel <= pauseWinkelVertikal; winkel++)
+  {
+    servoVertikal.write(winkel);
+    delay(15);
+  }
+
+  // Servos von den Arduino Pins trennen, damit diese nicht dauerhaft "brummen"
+  // (...Impulse vom Arduino gesendet bekommen)
+  servoHorizontal.detach();
+  servoVertikal.detach();
+}
+
 /**
  * loop() wird in einer Schleife aufgerufen, solange der Arduino Strom hat
  */
@@ -178,82 +263,16 @@ void loop()
   // Überprüfen, ob der Drucktaster gedrückt ist. Wenn dies der Fall ist, ist der ButtonState auf HIGH
   if (buttonState == HIGH)
   {
-
-    // Servos zu den Arduino Pins zuordnen
-    servoHorizontal.attach(servoPinHorizontal);
-    servoVertikal.attach(servoPinVertikal);
-
-    // Servos auf Startposition fahren
-    servoHorizontal.write(pauseWinkelHorizontal);
-    delay(15);
-    for (int winkel = pauseWinkelVertikal; winkel >= startWinkelVertikal; winkel--)
+    if (g_arrSongs[g_iCurrentSong] != NULL)
     {
-      servoVertikal.write(winkel);
-      delay(15);
+      playSong(g_arrSongs[g_iCurrentSong]);
+      g_iCurrentSong++;
     }
-
-    takt = MELODIE[0]; // erster Wert im Array
-
-    delay(500);
-
-    int position = 1;
-    while(MELODIE[position] != ENDE)
+    else
     {
-      int ton = MELODIE[position];
-
-      if (ton == PAUSE_1)
-      {
-        delay(pause_1);
-      }
-      else if (ton == PAUSE_2)
-      {
-        delay(pause_2);
-      }
-      else if (ton == PAUSE_3)
-      {
-        delay(pause_3);
-      }
-      else if (ton == PAUSE_4)
-      {
-        delay(pause_4);
-      }
-      else if (ton == PAUSE_5)
-      {
-        delay(pause_5);
-      }
-      else if (ton == PAUSE_6)
-      {
-        delay(pause_6);
-      }
-      else if (ton == PAUSE_7)
-      {
-        delay(pause_7);
-      }
-      else
-      {
-
-        spieleTon(ton);
-
-        delay(takt);
-      }
-      position++;
+      g_iCurrentSong = 0;
+      playSong(g_arrSongs[g_iCurrentSong]);
+      g_iCurrentSong++;
     }
-
-    delay(pause_7);
-
-    spieleEnde();
-
-    // Servos wieder zurück in Parkposition fahren
-    servoHorizontal.write(pauseWinkelHorizontal);
-    for (int winkel = startWinkelVertikal; winkel <= pauseWinkelVertikal; winkel++)
-    {
-      servoVertikal.write(winkel);
-      delay(15);
-    }
-
-    // Servos von den Arduino Pins trennen, damit diese nicht dauerhaft "brummen"
-    // (...Impulse vom Arduino gesendet bekommen)
-    servoHorizontal.detach();
-    servoVertikal.detach();
   }
 }
