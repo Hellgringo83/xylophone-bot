@@ -31,8 +31,8 @@ enum eNOTEN
   NOTE_LAST
 };
 
-const int iC = 100;
-const int iC1 = 45;
+const int iC = 103;
+const int iC1 = 47;
 
 int16_t g_arrNote[NOTE_LAST];
 
@@ -82,7 +82,7 @@ int NARCOTIC[] = {1000, E, PAUSE_2, D, PAUSE_2, E, PAUSE_2, D, PAUSE_2, E, PAUSE
 // Star Wars Intro, Part 1
 int START_WARS[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, ENDE};
 
-int *g_arrSongs[] = {TEST, NARCOTIC, MARSCH, SCOOTER, START_WARS, NULL};
+int *g_arrSongs[] = {MARSCH, SCOOTER, START_WARS, NULL};
 int g_iCurrentSong = 0;
 
 /**
