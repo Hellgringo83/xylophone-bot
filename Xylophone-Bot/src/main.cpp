@@ -3,6 +3,8 @@
  */
 #include <Arduino.h>
 #include <Servo.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
  *  Definition der Noten-Positionen (Winkel)
@@ -88,28 +90,218 @@ int g_iCurrentSong = 0;
 /**
  * dynamische Werte
  */
-const int pauseWinkelVertikal = 173;
-const int pauseWinkelHorizontal = 90;
+const int pauseWinkelSchlaegel = 180;
+const int pauseWinkelDrehung = 90;
 
-const int startWinkelVertikal = 68;
-const int winkelZumSchlagen = 30;
+const int startWinkelSchlaegel = 110;
+const int schlagWinkelSchlaegel = 50;
 
 /**
  * Initialisieren der Servo-Motoren
  */
-Servo servoHorizontal;
-Servo servoVertikal;
+Servo servoDrehung;
+Servo servoSchlaegel;
 
 /**
  * Definition der Pins des Arduino, wo die Servos und der taster angeschlossen sind
  */
-const int servoPinHorizontal = 10;
-const int servoPinVertikal = 9;
+const int pinServoDrehung = 10;
+const int pinServoSchlaegel = 9;
 const int buttonPin = 2;
+
+const size_t terminalBufferSize = 40;
+char terminalBuffer[terminalBufferSize];
+size_t terminalBufferPosition = 0;
 
 /**
  * Eigene Funktionen
  */
+
+void printTerminalHelp()
+{
+  Serial.println(F("UART-Diagnose:"));
+  Serial.println(F("  servo 1 <0-180>  Horizontalservo (Pin 10)"));
+  Serial.println(F("  servo 2 <0-180>  Vertikalservo (Pin 9)"));
+  Serial.println(F("  status             Servozustand anzeigen"));
+  Serial.println(F("  detach <1|2|all>   Servo(s) abschalten"));
+  Serial.println(F("  help               Hilfe anzeigen"));
+}
+
+void printServoStatus(uint8_t servoNumber, Servo &servo, int pin)
+{
+  Serial.print(F("Servo "));
+  Serial.print(servoNumber);
+  Serial.print(F(": Pin "));
+  Serial.print(pin);
+  Serial.print(F(", Winkel "));
+  Serial.print(servo.read());
+  Serial.print(F(" Grad, "));
+  Serial.println(servo.attached() ? F("aktiv") : F("abgeschaltet"));
+}
+
+Servo *getServo(uint8_t servoNumber, int &pin)
+{
+  if (servoNumber == 1)
+  {
+    pin = pinServoDrehung;
+    return &servoDrehung;
+  }
+
+  if (servoNumber == 2)
+  {
+    pin = pinServoSchlaegel;
+    return &servoSchlaegel;
+  }
+
+  return NULL;
+}
+
+void processTerminalCommand(char *command)
+{
+  char *commandName = strtok(command, " \t");
+  if (commandName == NULL)
+  {
+    return;
+  }
+
+  if (strcmp(commandName, "help") == 0)
+  {
+    printTerminalHelp();
+    return;
+  }
+
+  if (strcmp(commandName, "status") == 0)
+  {
+    printServoStatus(1, servoDrehung, pinServoDrehung);
+    printServoStatus(2, servoSchlaegel, pinServoSchlaegel);
+    return;
+  }
+
+  if (strcmp(commandName, "servo") == 0)
+  {
+    char *servoText = strtok(NULL, " \t");
+    char *angleText = strtok(NULL, " \t");
+    char *extraText = strtok(NULL, " \t");
+
+    if (servoText == NULL || angleText == NULL || extraText != NULL)
+    {
+      Serial.println(F("Fehler: Verwendung: servo <1|2> <0-180>"));
+      return;
+    }
+
+    char *servoEnd;
+    char *angleEnd;
+    long servoNumber = strtol(servoText, &servoEnd, 10);
+    long angle = strtol(angleText, &angleEnd, 10);
+
+    int pin = 0;
+    Servo *servo = getServo(servoNumber, pin);
+    if (*servoEnd != '\0' || servo == NULL)
+    {
+      Serial.println(F("Fehler: Servonummer muss 1 oder 2 sein."));
+      return;
+    }
+
+    if (*angleEnd != '\0' || angle < 0 || angle > 180)
+    {
+      Serial.println(F("Fehler: Winkel muss zwischen 0 und 180 Grad liegen."));
+      return;
+    }
+
+    if (!servo->attached())
+    {
+      servo->attach(pin);
+    }
+    servo->write(angle);
+
+    Serial.print(F("OK: Servo "));
+    Serial.print(servoNumber);
+    Serial.print(F(" faehrt auf "));
+    Serial.print(angle);
+    Serial.println(F(" Grad."));
+    return;
+  }
+
+  if (strcmp(commandName, "detach") == 0)
+  {
+    char *servoText = strtok(NULL, " \t");
+    char *extraText = strtok(NULL, " \t");
+    if (servoText == NULL || extraText != NULL)
+    {
+      Serial.println(F("Fehler: Verwendung: detach <1|2|all>"));
+      return;
+    }
+
+    if (strcmp(servoText, "all") == 0)
+    {
+      servoDrehung.detach();
+      servoSchlaegel.detach();
+      Serial.println(F("OK: Beide Servos abgeschaltet."));
+      return;
+    }
+
+    char *servoEnd;
+    long servoNumber = strtol(servoText, &servoEnd, 10);
+    int pin = 0;
+    Servo *servo = getServo(servoNumber, pin);
+    if (*servoEnd != '\0' || servo == NULL)
+    {
+      Serial.println(F("Fehler: Servonummer muss 1 oder 2 sein."));
+      return;
+    }
+
+    servo->detach();
+    Serial.print(F("OK: Servo "));
+    Serial.print(servoNumber);
+    Serial.println(F(" abgeschaltet."));
+    return;
+  }
+
+  Serial.println(F("Unbekanntes Kommando. 'help' zeigt die Befehle."));
+}
+
+void readTerminal()
+{
+  while (Serial.available() > 0)
+  {
+    char character = Serial.read();
+
+    if (character == '\r' || character == '\n')
+    {
+      Serial.println();
+
+      if (terminalBufferPosition > 0)
+      {
+        terminalBuffer[terminalBufferPosition] = '\0';
+        processTerminalCommand(terminalBuffer);
+        terminalBufferPosition = 0;
+      }
+      continue;
+    }
+
+    if (character == '\b' || character == 127)
+    {
+      if (terminalBufferPosition > 0)
+      {
+        terminalBufferPosition--;
+        Serial.print(F("\b \b"));
+      }
+      continue;
+    }
+
+    if (terminalBufferPosition < terminalBufferSize - 1)
+    {
+      terminalBuffer[terminalBufferPosition++] = character;
+      Serial.write(character);
+    }
+    else
+    {
+      terminalBufferPosition = 0;
+      Serial.println();
+      Serial.println(F("Fehler: Kommando zu lang."));
+    }
+  }
+}
 
 void spieleTon(int ton)
 {
@@ -117,35 +309,35 @@ void spieleTon(int ton)
   // den aktuellen Winkel des Servos auslesen
   // int aktuellerWinkel = servoHorizontal.read();
 
-  servoHorizontal.write(g_arrNote[ton]);
+  servoDrehung.write(g_arrNote[ton]);
 
   // delay(abs(ton - aktuellerWinkel) * 6);
   delay(150);
 
   // Note anschlagen
-  servoVertikal.write(startWinkelVertikal - winkelZumSchlagen);
-  delay(20);
-  servoVertikal.write(startWinkelVertikal);
+  servoSchlaegel.write(startWinkelSchlaegel - schlagWinkelSchlaegel);
+  delay(200);
+  servoSchlaegel.write(startWinkelSchlaegel);
   delay(20);
 }
 
 void spieleEnde()
 {
-  servoHorizontal.write(g_arrNote[C]);
+  servoDrehung.write(g_arrNote[C]);
   delay(100);
-  servoVertikal.write(startWinkelVertikal - 8);
+  servoSchlaegel.write(startWinkelSchlaegel - 8);
   delay(100);
   for (int winkel = g_arrNote[C]; winkel >= g_arrNote[C1]; winkel--)
   {
-    servoHorizontal.write(winkel);
+    servoDrehung.write(winkel);
     delay(5);
   }
   delay(500);
-  servoVertikal.write(startWinkelVertikal + winkelZumSchlagen);
+  servoSchlaegel.write(startWinkelSchlaegel + schlagWinkelSchlaegel);
   delay(100);
-  servoVertikal.write(startWinkelVertikal - winkelZumSchlagen);
+  servoSchlaegel.write(startWinkelSchlaegel - schlagWinkelSchlaegel);
   delay(20);
-  servoVertikal.write(startWinkelVertikal);
+  servoSchlaegel.write(startWinkelSchlaegel);
   delay(300);
 }
 
@@ -155,9 +347,12 @@ void spieleEnde()
 void setup()
 {
   Serial.begin(115200);
+  Serial.println();
+  Serial.println(F("Xylophone-Bot bereit. 'help' zeigt die UART-Kommandos."));
+
   // initialen Servo-Wert setzen
-  servoHorizontal.write(pauseWinkelHorizontal);
-  servoVertikal.write(pauseWinkelVertikal);
+  servoDrehung.write(pauseWinkelDrehung);
+  servoSchlaegel.write(pauseWinkelSchlaegel);
 
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
@@ -174,15 +369,15 @@ void setup()
 void playSong(int *pSong)
 {
   // Servos zu den Arduino Pins zuordnen
-  servoHorizontal.attach(servoPinHorizontal);
-  servoVertikal.attach(servoPinVertikal);
+  servoDrehung.attach(pinServoDrehung);
+  servoSchlaegel.attach(pinServoSchlaegel);
 
   // Servos auf Startposition fahren
-  servoHorizontal.write(pauseWinkelHorizontal);
+  servoDrehung.write(pauseWinkelDrehung);
   delay(15);
-  for (int winkel = pauseWinkelVertikal; winkel >= startWinkelVertikal; winkel--)
+  for (int winkel = pauseWinkelSchlaegel; winkel >= startWinkelSchlaegel; winkel--)
   {
-    servoVertikal.write(winkel);
+    servoSchlaegel.write(winkel);
     delay(15);
   }
 
@@ -238,17 +433,17 @@ void playSong(int *pSong)
   spieleEnde();
 
   // Servos wieder zurück in Parkposition fahren
-  servoHorizontal.write(pauseWinkelHorizontal);
-  for (int winkel = startWinkelVertikal; winkel <= pauseWinkelVertikal; winkel++)
+  servoDrehung.write(pauseWinkelDrehung);
+  for (int winkel = startWinkelSchlaegel; winkel <= pauseWinkelSchlaegel; winkel++)
   {
-    servoVertikal.write(winkel);
+    servoSchlaegel.write(winkel);
     delay(15);
   }
 
   // Servos von den Arduino Pins trennen, damit diese nicht dauerhaft "brummen"
   // (...Impulse vom Arduino gesendet bekommen)
-  servoHorizontal.detach();
-  servoVertikal.detach();
+  servoDrehung.detach();
+  servoSchlaegel.detach();
 }
 
 /**
@@ -256,6 +451,7 @@ void playSong(int *pSong)
  */
 void loop()
 {
+  readTerminal();
 
   // Lesen des Wertes des Drucktasters
   int buttonState = digitalRead(buttonPin);
