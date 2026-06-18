@@ -69,3 +69,16 @@ play 124,4/4,e4e8g8e8d8c4b4e4e8g8e8d8c8d8c4b4
 play 124,4/4,e4e8g8e8d8c4b4e4e8g8e8d8c8d8c4b4
 
 ## 7 Army
+play 200,4/4,a2a4C4a4g4f1e1a2a4C4a4g4f4g4f4e1a2a4C4a4g4f1e1a2a4C4a4g4f4g4f4e4
+
+# Insomnia
+play 200,4/4,d4d4d8c8c8c8b2
+
+# Not Human
+play 180,4/4,c8C8d8b8e8a8f8g8C8c8b8d8a8e8g8f8c8g8C8e8b8d8a8f8C8c8a8e8b8d8g8f8
+
+# Mission Impossible
+play 100,5/4,g8g8b8C8g8g8f8g8g8g8e8f8g8g8b8C8g8g8f8g8
+
+# Indiana Jones
+play 100,4/4,efgCefg
