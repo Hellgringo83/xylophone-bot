@@ -98,9 +98,11 @@ play 160,4/4,a2a4g4a2a4g4a2a4e4f1a2a4g4a2a4g4a2a4e4f1
 play 160,4/4,a4a2a4b4C2C4C4b4b4a1a4a2a4b4C2C4C4b4b4a1
 
 ## Drumm
-play 160,4/4,t16t16t16t16t16t16t16t16
+play 160,4/4,t16t16t16
 
-play 160,4/4,T16T16T16T16
+play 240,4/4,T16T16T16T16
 
 ## Drum Song
 play 110,4/4,t8c8e8g8t8e8g8C8T8C8g8e8t8d8f8a8t8c8g8e8T8C8a8g8t8d8f8a8T8C8a8f8t8c8e8g8t8g8e8d8t8c8T8C8g8e8
+
+
