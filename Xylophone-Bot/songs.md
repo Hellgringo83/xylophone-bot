@@ -46,9 +46,11 @@ werden.
 # UART-/Terminal-Melodien
 
 Das Format lautet `BPM,Takt,Noten`. Hinter jeder Note steht ihr Notenwert.
-`r` bezeichnet eine Pause und `C` das hohe C.
+`r` bezeichnet eine Pause und `C` das hohe C. Für Holz-/Drumschläge gibt es
+zusätzlich `t` bei 135 Grad und `T` bei 55 Grad. Beide werden wie normale
+Noten mit einer Länge geschrieben, zum Beispiel:
 
-Beispiel: `play 120,4/4,c4d4e8r8C2`
+`play 120,4/4,t8T8c4r4`
 
 ## Alle meine Entchen
 play 200,4/4,c4d4e4f4g2g2a4a4a4a4g1a4a4a4a4g1f4f4f4f4e2e2d4d4d4d4c1
@@ -71,17 +73,28 @@ play 124,4/4,e4e8g8e8d8c4b4e4e8g8e8d8c8d8c4b4
 ## 7 Army
 play 200,4/4,a2a4C4a4g4f1e1a2a4C4a4g4f4g4f4e1a2a4C4a4g4f1e1a2a4C4a4g4f4g4f4e4
 
-# Insomnia
+## Insomnia
 play 200,4/4,d4d4d8c8c8c8b2
 
-# Not Human
+## Not Human
 play 180,4/4,c8C8d8b8e8a8f8g8C8c8b8d8a8e8g8f8c8g8C8e8b8d8a8f8C8c8a8e8b8d8g8f8
 
-# Mission Impossible
+## Mission Impossible
 play 100,5/4,g8g8b8C8g8g8f8g8g8g8e8f8g8g8b8C8g8g8f8g8
 
-# Indiana Jones
+## Indiana Jones
 play 160,4/4,e4f8g4C2e4f4g4
 
-# Fast Boy
+## Fast Boy
 play 260,4/4,c16e16g16c16e16g16d16f16a16d16f16a16c16e16g16c16e16g16
+
+## Lean on me
+play 160,4/4,c4d4e4f2f4e4d4c2c4d4e4e2d4c4d2
+
+## Eye Of the Tiger
+play 160,4/4,a2a4g4a2a4g4a2a4e4f1a2a4g4a2a4g4a2a4e4f1
+
+## Satisfaction
+play 160,4/4,a4a2a4b4C2C4C4b4b4a1a4a2a4b4C2C4C4b4b4a1
+
+

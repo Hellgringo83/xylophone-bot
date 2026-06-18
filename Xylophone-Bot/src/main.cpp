@@ -31,11 +31,15 @@ enum eNOTEN
   B,
   H = B,
   C1,
+  DRUM_T,
+  DRUM_T_HIGH,
   NOTE_LAST
 };
 
 const int iC = 126;
 const int iC1 = 60;
+const int iDrumT = 135;
+const int iDrumTHigh = 55;
 
 int16_t g_arrNote[NOTE_LAST];
 
@@ -163,7 +167,8 @@ void printTerminalHelp()
   Serial.println(F("  play BPM,TAKT,NOTEN"));
   Serial.println(F("    z.B. play 120,4/4,c4d4e8r8C2"));
   Serial.println(F("    Kurzform: p120,4/4,c4d4e8r8C2"));
-  Serial.println(F("    Noten: c d e f g a b/h, hohes C: C, Pause: r"));
+  Serial.println(F("    Noten: c d e f g a b/h, hohes C: C"));
+  Serial.println(F("    Holz/Drum: t (135 Grad), T (55 Grad), Pause: r"));
   Serial.println(F("    Laengen: 1, 2, 4, 8 oder 16"));
   Serial.println(F("  status             Servozustand anzeigen"));
   Serial.println(F("  detach <d|s|all>   Servo(s) abschalten"));
@@ -208,6 +213,16 @@ int noteFromCharacter(char character)
   if (character == 'C')
   {
     return C1;
+  }
+
+  if (character == 't')
+  {
+    return DRUM_T;
+  }
+
+  if (character == 'T')
+  {
+    return DRUM_T_HIGH;
   }
 
   switch (tolower(character))
@@ -549,6 +564,14 @@ void setup()
   for (int i = 0; i < NOTE_LAST; i++)
   {
     g_arrNote[i] = iC - (i * fSpace);
+  }
+
+  // Die beiden Holzpositionen liegen ausserhalb der normalen Tonleiter.
+  g_arrNote[DRUM_T] = iDrumT;
+  g_arrNote[DRUM_T_HIGH] = iDrumTHigh;
+
+  for (int i = 0; i < NOTE_LAST; i++)
+  {
     Serial.println(g_arrNote[i]);
   }
 }
