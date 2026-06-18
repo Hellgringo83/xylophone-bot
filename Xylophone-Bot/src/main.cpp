@@ -3,6 +3,7 @@
  */
 #include <Arduino.h>
 #include <Servo.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -122,6 +123,10 @@ void printTerminalHelp()
   Serial.println(F("UART-Diagnose:"));
   Serial.println(F("  servo 1 <0-180>  Horizontalservo (Pin 10)"));
   Serial.println(F("  servo 2 <0-180>  Vertikalservo (Pin 9)"));
+  Serial.println(F("  p<folge>           Lied spielen, z.B. pa3c1d2"));
+  Serial.println(F("  play <folge>       Alternative: play a3c1d2"));
+  Serial.println(F("    Noten: c d e f g a b/h, hohes C: C"));
+  Serial.println(F("    Pausen: 1 bis 7"));
   Serial.println(F("  status             Servozustand anzeigen"));
   Serial.println(F("  detach <1|2|all>   Servo(s) abschalten"));
   Serial.println(F("  help               Hilfe anzeigen"));
@@ -156,6 +161,120 @@ Servo *getServo(uint8_t servoNumber, int &pin)
   return NULL;
 }
 
+void spieleTon(int ton);
+
+int noteFromCharacter(char character)
+{
+  if (character == 'C')
+  {
+    return C1;
+  }
+
+  switch (tolower(character))
+  {
+  case 'c':
+    return C;
+  case 'd':
+    return D;
+  case 'e':
+    return E;
+  case 'f':
+    return F;
+  case 'g':
+    return G;
+  case 'a':
+    return A;
+  case 'b':
+  case 'h':
+    return B;
+  default:
+    return -1;
+  }
+}
+
+void spielePause(uint8_t pauseNumber)
+{
+  switch (pauseNumber)
+  {
+  case 1:
+    delay(pause_1);
+    break;
+  case 2:
+    delay(pause_2);
+    break;
+  case 3:
+    delay(pause_3);
+    break;
+  case 4:
+    delay(pause_4);
+    break;
+  case 5:
+    delay(pause_5);
+    break;
+  case 6:
+    delay(pause_6);
+    break;
+  case 7:
+    delay(pause_7);
+    break;
+  }
+}
+
+bool isValidMelody(const char *melody)
+{
+  if (melody == NULL || *melody == '\0')
+  {
+    return false;
+  }
+
+  while (*melody != '\0')
+  {
+    if (noteFromCharacter(*melody) < 0 &&
+        (*melody < '1' || *melody > '7'))
+    {
+      return false;
+    }
+    melody++;
+  }
+
+  return true;
+}
+
+void playTerminalMelody(const char *melody)
+{
+  servoDrehung.attach(pinServoDrehung);
+  servoSchlaegel.attach(pinServoSchlaegel);
+
+  servoDrehung.write(pauseWinkelDrehung);
+  servoSchlaegel.write(startWinkelSchlaegel);
+  delay(500);
+
+  Serial.print(F("Spiele: "));
+  Serial.println(melody);
+
+  while (*melody != '\0')
+  {
+    int note = noteFromCharacter(*melody);
+    if (note >= 0)
+    {
+      spieleTon(note);
+    }
+    else
+    {
+      spielePause(*melody - '0');
+    }
+    melody++;
+  }
+
+  servoDrehung.write(pauseWinkelDrehung);
+  servoSchlaegel.write(pauseWinkelSchlaegel);
+  delay(500);
+  servoDrehung.detach();
+  servoSchlaegel.detach();
+
+  Serial.println(F("Lied beendet."));
+}
+
 void processTerminalCommand(char *command)
 {
   char *commandName = strtok(command, " \t");
@@ -174,6 +293,43 @@ void processTerminalCommand(char *command)
   {
     printServoStatus(1, servoDrehung, pinServoDrehung);
     printServoStatus(2, servoSchlaegel, pinServoSchlaegel);
+    return;
+  }
+
+  const char *melody = NULL;
+  if (strcmp(commandName, "play") == 0)
+  {
+    melody = strtok(NULL, " \t");
+    if (strtok(NULL, " \t") != NULL)
+    {
+      melody = NULL;
+    }
+  }
+  else if (commandName[0] == 'p' && commandName[1] != '\0')
+  {
+    melody = commandName + 1;
+    if (strtok(NULL, " \t") != NULL)
+    {
+      melody = NULL;
+    }
+  }
+
+  if (melody != NULL)
+  {
+    if (!isValidMelody(melody))
+    {
+      Serial.println(F("Fehler: Noten c,d,e,f,g,a,b/h,C und Pausen 1-7 erlaubt."));
+      return;
+    }
+
+    playTerminalMelody(melody);
+    return;
+  }
+
+  if (strcmp(commandName, "play") == 0 ||
+      (commandName[0] == 'p' && commandName[1] != '\0'))
+  {
+    Serial.println(F("Fehler: Verwendung: pa3c1d2 oder play a3c1d2"));
     return;
   }
 
