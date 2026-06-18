@@ -58,13 +58,14 @@ const int PAUSE_7 = 1070;
 
 const int ENDE = 9999;
 
-int pause_1 = 50;
-int pause_2 = 100;
-int pause_3 = 200;
-int pause_4 = 300;
-int pause_5 = 400;
-int pause_6 = 500;
-int pause_7 = 600;
+// Deutlich unterscheidbare Pausen fuer die Terminal-Melodien.
+int pause_1 = 100;
+int pause_2 = 200;
+int pause_3 = 300;
+int pause_4 = 450;
+int pause_5 = 600;
+int pause_6 = 800;
+int pause_7 = 1200;
 
 /**
  * Array mit Noten = Melodie
