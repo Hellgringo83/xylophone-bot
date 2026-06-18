@@ -94,7 +94,7 @@ int g_iCurrentSong = 0;
 const int pauseWinkelSchlaegel = 180;
 const int pauseWinkelDrehung = 90;
 
-const int startWinkelSchlaegel = 100;
+const int startWinkelSchlaegel = 98;
 const int schlagWinkelSchlaegel = 22;
 
 /**
@@ -110,7 +110,8 @@ const int pinServoDrehung = 10;
 const int pinServoSchlaegel = 9;
 const int buttonPin = 2;
 
-const size_t terminalBufferSize = 40;
+// Platz fuer laengere Play-Folgen, z.B. komplette Melodieabschnitte.
+const size_t terminalBufferSize = 128;
 char terminalBuffer[terminalBufferSize];
 size_t terminalBufferPosition = 0;
 
