@@ -34,8 +34,8 @@ enum eNOTEN
   NOTE_LAST
 };
 
-const int iC = 103;
-const int iC1 = 47;
+const int iC = 126;
+const int iC1 = 60;
 
 int16_t g_arrNote[NOTE_LAST];
 
@@ -94,8 +94,8 @@ int g_iCurrentSong = 0;
 const int pauseWinkelSchlaegel = 180;
 const int pauseWinkelDrehung = 90;
 
-const int startWinkelSchlaegel = 110;
-const int schlagWinkelSchlaegel = 50;
+const int startWinkelSchlaegel = 100;
+const int schlagWinkelSchlaegel = 22;
 
 /**
  * Initialisieren der Servo-Motoren
@@ -122,13 +122,13 @@ void printTerminalHelp()
 {
   Serial.println(F("UART-Diagnose:"));
   Serial.println(F("  d <0-180>         Drehservo (Pin 10)"));
-  Serial.println(F("  k <0-180>         Kloeppelservo (Pin 9)"));
+  Serial.println(F("  s <0-180>         Schlaegelservo (Pin 9)"));
   Serial.println(F("  p<folge>           Lied spielen, z.B. pa3c1d2"));
   Serial.println(F("  play <folge>       Alternative: play a3c1d2"));
   Serial.println(F("    Noten: c d e f g a b/h, hohes C: C"));
   Serial.println(F("    Pausen: 1 bis 7"));
   Serial.println(F("  status             Servozustand anzeigen"));
-  Serial.println(F("  detach <d|k|all>   Servo(s) abschalten"));
+  Serial.println(F("  detach <d|s|all>   Servo(s) abschalten"));
   Serial.println(F("  help               Hilfe anzeigen"));
 }
 
@@ -152,7 +152,7 @@ Servo *getServo(char servoCommand, int &pin)
     return &servoDrehung;
   }
 
-  if (servoCommand == 'k')
+  if (servoCommand == 's')
   {
     pin = pinServoSchlaegel;
     return &servoSchlaegel;
@@ -292,7 +292,7 @@ void processTerminalCommand(char *command)
   if (strcmp(commandName, "status") == 0)
   {
     printServoStatus('d', servoDrehung, pinServoDrehung);
-    printServoStatus('k', servoSchlaegel, pinServoSchlaegel);
+    printServoStatus('s', servoSchlaegel, pinServoSchlaegel);
     return;
   }
 
@@ -333,14 +333,14 @@ void processTerminalCommand(char *command)
     return;
   }
 
-  if (strcmp(commandName, "d") == 0 || strcmp(commandName, "k") == 0)
+  if (strcmp(commandName, "d") == 0 || strcmp(commandName, "s") == 0)
   {
     char *angleText = strtok(NULL, " \t");
     char *extraText = strtok(NULL, " \t");
 
     if (angleText == NULL || extraText != NULL)
     {
-      Serial.println(F("Fehler: Verwendung: d <0-180> oder k <0-180>"));
+      Serial.println(F("Fehler: Verwendung: d <0-180> oder s <0-180>"));
       return;
     }
 
@@ -376,7 +376,7 @@ void processTerminalCommand(char *command)
     char *extraText = strtok(NULL, " \t");
     if (servoText == NULL || extraText != NULL)
     {
-      Serial.println(F("Fehler: Verwendung: detach <d|k|all>"));
+      Serial.println(F("Fehler: Verwendung: detach <d|s|all>"));
       return;
     }
 
@@ -392,7 +392,7 @@ void processTerminalCommand(char *command)
     Servo *servo = strlen(servoText) == 1 ? getServo(servoText[0], pin) : NULL;
     if (servo == NULL)
     {
-      Serial.println(F("Fehler: Servo muss d oder k sein."));
+      Serial.println(F("Fehler: Servo muss d oder s sein."));
       return;
     }
 
@@ -452,9 +452,6 @@ void readTerminal()
 void spieleTon(int ton)
 {
 
-  // den aktuellen Winkel des Servos auslesen
-  // int aktuellerWinkel = servoHorizontal.read();
-
   servoDrehung.write(g_arrNote[ton]);
 
   // delay(abs(ton - aktuellerWinkel) * 6);
@@ -462,7 +459,7 @@ void spieleTon(int ton)
 
   // Note anschlagen
   servoSchlaegel.write(startWinkelSchlaegel - schlagWinkelSchlaegel);
-  delay(200);
+  delay(80);
   servoSchlaegel.write(startWinkelSchlaegel);
   delay(20);
 }
@@ -471,20 +468,25 @@ void spieleEnde()
 {
   servoDrehung.write(g_arrNote[C]);
   delay(100);
-  servoSchlaegel.write(startWinkelSchlaegel - 8);
+  int iBlub = 8;
+  iBlub = 14;
+  servoSchlaegel.write(startWinkelSchlaegel - iBlub);
   delay(100);
   for (int winkel = g_arrNote[C]; winkel >= g_arrNote[C1]; winkel--)
   {
     servoDrehung.write(winkel);
     delay(5);
   }
-  delay(500);
-  servoSchlaegel.write(startWinkelSchlaegel + schlagWinkelSchlaegel);
-  delay(100);
-  servoSchlaegel.write(startWinkelSchlaegel - schlagWinkelSchlaegel);
-  delay(20);
   servoSchlaegel.write(startWinkelSchlaegel);
-  delay(300);
+  delay(100);
+  spieleTon(C1);
+  // delay(500);
+  // servoSchlaegel.write(startWinkelSchlaegel + schlagWinkelSchlaegel);
+  // delay(100);
+  // servoSchlaegel.write(startWinkelSchlaegel - schlagWinkelSchlaegel);
+  // delay(80);
+  // servoSchlaegel.write(startWinkelSchlaegel);
+  // delay(300);
 }
 
 /**
