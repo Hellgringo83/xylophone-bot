@@ -61,3 +61,11 @@ play 100,4/4,d8b8f8b8e8b8f8b8d8b8f8b8e8b8f8b8r4
 
 ## Hänschen Klein
 play 100,4/4,g4e4e2f4d4d2c4d4e4f4g4g4g2r4g4e4e2f4d4d2c4e4g4g4c2r4c4c4c2
+
+## Terminator
+play 124,4/4,e4e8g8e8d8c4b4e4e8g8e8d8c8d8c4b4
+
+## Axel F
+play 124,4/4,e4e8g8e8d8c4b4e4e8g8e8d8c8d8c4b4
+
+## 7 Army

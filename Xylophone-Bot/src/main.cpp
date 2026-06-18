@@ -100,7 +100,7 @@ const NoteEvent STAR_WARS_NOTES[] = {
 
 const Song MARSCH = {"Imperial March", 120, 4, 4, MARSCH_NOTES, EVENT_COUNT(MARSCH_NOTES)};
 const Song SCOOTER = {"Scooter", 120, 4, 4, SCOOTER_NOTES, EVENT_COUNT(SCOOTER_NOTES)};
-const Song STAR_WARS = {"Star Wars Intro", 110, 4, 4, STAR_WARS_NOTES, EVENT_COUNT(STAR_WARS_NOTES)};
+const Song STAR_WARS = {"Star Wars Intro", 200, 4, 4, STAR_WARS_NOTES, EVENT_COUNT(STAR_WARS_NOTES)};
 
 const Song *g_arrSongs[] = {&MARSCH, &SCOOTER, &STAR_WARS, NULL};
 int g_iCurrentSong = 0;
