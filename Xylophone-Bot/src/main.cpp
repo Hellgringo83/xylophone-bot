@@ -59,6 +59,7 @@ struct NoteEvent
 struct Song
 {
   const char *name;
+  bool nameInProgramMemory;
   uint16_t bpm;
   uint8_t beatsPerMeasure;
   uint8_t beatUnit;
@@ -66,44 +67,55 @@ struct Song
   size_t eventCount;
 };
 
-#define NOTE(tone, length) { tone, length }
-#define PAUSE(length) { REST, length }
-#define EVENT_COUNT(events) (sizeof(events) / sizeof(events[0]))
+/**
+ * Auch die feste Playlist verwendet ausschliesslich das Terminal-Stringformat.
+ * Namen und Notationen liegen im Flash (PROGMEM), damit sie auf dem Uno keinen
+ * kostbaren Arbeitsspeicher belegen.
+ */
+struct PlaylistEntry
+{
+  const char *name;
+  const char *notation;
+};
 
-// Melodie: Star Wars Imperial March, Part 1
-const NoteEvent MARSCH_NOTES[] = {
-    NOTE(E, 4), NOTE(E, 4), NOTE(E, 4),
-    NOTE(C, 8), NOTE(G, 8), NOTE(E, 4), NOTE(C, 8), NOTE(G, 8), NOTE(E, 2),
-    PAUSE(4),
-    NOTE(B, 4), NOTE(B, 4), NOTE(B, 4),
-    NOTE(C1, 8), NOTE(G, 8), NOTE(E, 4), NOTE(C, 8), NOTE(G, 8), NOTE(E, 2)};
+const char NAME_ENTCHEN[] PROGMEM = "Alle meine Entchen";
+const char SONG_ENTCHEN[] PROGMEM = "200,4/4,c4d4e4f4g2g2a4a4a4a4g1a4a4a4a4g1f4f4f4f4e2e2d4d4d4d4c1";
+const char NAME_FREUDE[] PROGMEM = "Freude schoener Goetterfunke";
+const char SONG_FREUDE[] PROGMEM = "120,4/4,e4e4f4g4g4f4e4e4d4c4c4d4e4e2d2d2r2e4e4f4g4g4f4e4d4c4c4d4e4d4c4c2";
+const char NAME_THUNDERSTRUCK[] PROGMEM = "Thunderstruck";
+const char SONG_THUNDERSTRUCK[] PROGMEM = "100,4/4,d8b8f8b8e8b8f8b8d8b8f8b8e8b8f8b8r4";
+const char NAME_HAENSCHEN[] PROGMEM = "Haenschen Klein";
+const char SONG_HAENSCHEN[] PROGMEM = "100,4/4,g4e4e2f4d4d2c4d4e4f4g4g4g2r4g4e4e2f4d4d2c4e4g4g4c2r4c4c4c2";
+const char NAME_TERMINATOR[] PROGMEM = "Terminator";
+const char SONG_TERMINATOR[] PROGMEM = "124,4/4,e4e8g8e8d8c4b4e4e8g8e8d8c8d8c4b4";
+const char NAME_AXEL_F[] PROGMEM = "Axel F";
+const char SONG_AXEL_F[] PROGMEM = "124,4/4,e4e8g8e8d8c4b4e4e8g8e8d8c8d8c4b4";
+const char NAME_SEVEN_NATION_ARMY[] PROGMEM = "Seven Nation Army";
+const char SONG_SEVEN_NATION_ARMY[] PROGMEM = "200,4/4,a2a4C4a4g4f1e1a2a4C4a4g4f4g4f4e1a2a4C4a4g4f1e1a2a4C4a4g4f4g4f4e4";
+const char NAME_INSOMNIA[] PROGMEM = "Insomnia";
+const char SONG_INSOMNIA[] PROGMEM = "200,4/4,d4d4d8c8c8c8b2";
+const char NAME_NOT_HUMAN[] PROGMEM = "Not Human";
+const char SONG_NOT_HUMAN[] PROGMEM = "180,4/4,c8C8d8b8e8a8f8g8C8c8b8d8a8e8g8f8c8g8C8e8b8d8a8f8C8c8a8e8b8d8g8f8";
+const char NAME_MISSION_IMPOSSIBLE[] PROGMEM = "Mission Impossible";
+const char SONG_MISSION_IMPOSSIBLE[] PROGMEM = "100,5/4,g8g8b8C8g8g8f8g8g8g8e8f8g8g8b8C8g8g8f8g8";
+const char NAME_INDIANA_JONES[] PROGMEM = "Indiana Jones";
+const char SONG_INDIANA_JONES[] PROGMEM = "100,4/4,e4f8g8C2r4d4e8f8g2r4a4b8C8f2";
 
-const NoteEvent SCOOTER_NOTES[] = {
-    NOTE(E, 8), PAUSE(8), NOTE(H, 8), PAUSE(8), NOTE(E, 8), PAUSE(8),
-    NOTE(H, 8), NOTE(A, 8), NOTE(G, 8), PAUSE(8),
-    NOTE(G, 8), PAUSE(8), NOTE(G, 8), PAUSE(4),
-    NOTE(H, 8), NOTE(G, 8), PAUSE(8), NOTE(H, 8), PAUSE(8),
-    NOTE(G, 8), PAUSE(8), NOTE(H, 8), NOTE(G, 8), NOTE(E, 8),
-    PAUSE(8), NOTE(E, 8), PAUSE(8), NOTE(E, 4)};
+const PlaylistEntry PLAYLIST[] PROGMEM = {
+    {NAME_ENTCHEN, SONG_ENTCHEN},
+    {NAME_FREUDE, SONG_FREUDE},
+    {NAME_THUNDERSTRUCK, SONG_THUNDERSTRUCK},
+    {NAME_HAENSCHEN, SONG_HAENSCHEN},
+    {NAME_TERMINATOR, SONG_TERMINATOR},
+    {NAME_AXEL_F, SONG_AXEL_F},
+    {NAME_SEVEN_NATION_ARMY, SONG_SEVEN_NATION_ARMY},
+    {NAME_INSOMNIA, SONG_INSOMNIA},
+    {NAME_NOT_HUMAN, SONG_NOT_HUMAN},
+    {NAME_MISSION_IMPOSSIBLE, SONG_MISSION_IMPOSSIBLE},
+    {NAME_INDIANA_JONES, SONG_INDIANA_JONES}};
 
-// Star Wars Intro, Part 1
-const NoteEvent STAR_WARS_NOTES[] = {
-    NOTE(C, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4), NOTE(E, 4),
-    NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4),
-    NOTE(E, 4), NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2),
-    NOTE(F, 4), NOTE(E, 4), NOTE(F, 4), NOTE(D, 2), PAUSE(1),
-    NOTE(D, 8), NOTE(D, 8), NOTE(D, 8), NOTE(D, 8), NOTE(D, 8), NOTE(D, 8),
-    NOTE(C, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4), NOTE(E, 4),
-    NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4),
-    NOTE(E, 4), NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2),
-    NOTE(F, 4), NOTE(E, 4), NOTE(F, 4), NOTE(D, 2)};
-
-const Song MARSCH = {"Imperial March", 120, 4, 4, MARSCH_NOTES, EVENT_COUNT(MARSCH_NOTES)};
-const Song SCOOTER = {"Scooter", 120, 4, 4, SCOOTER_NOTES, EVENT_COUNT(SCOOTER_NOTES)};
-const Song STAR_WARS = {"Star Wars Intro", 200, 4, 4, STAR_WARS_NOTES, EVENT_COUNT(STAR_WARS_NOTES)};
-
-const Song *g_arrSongs[] = {&MARSCH, &SCOOTER, &STAR_WARS, NULL};
-int g_iCurrentSong = 0;
+const size_t PLAYLIST_SIZE = sizeof(PLAYLIST) / sizeof(PLAYLIST[0]);
+size_t g_iCurrentSong = 0;
 
 /**
  * dynamische Werte
@@ -189,6 +201,7 @@ Servo *getServo(char servoCommand, int &pin)
 
 void spieleTon(int ton);
 void playSong(const Song &song);
+bool playPlaylistSong(size_t playlistIndex);
 
 int noteFromCharacter(char character)
 {
@@ -290,6 +303,7 @@ bool parseTerminalSong(const char *notation, Song &song)
   }
 
   song.name = "Terminal";
+  song.nameInProgramMemory = false;
   song.bpm = bpm;
   song.beatsPerMeasure = beatsPerMeasure;
   song.beatUnit = beatUnit;
@@ -577,7 +591,14 @@ void playSong(const Song &song)
   delay(500);
 
   Serial.print(F("Spiele \""));
-  Serial.print(song.name);
+  if (song.nameInProgramMemory)
+  {
+    Serial.print(reinterpret_cast<const __FlashStringHelper *>(song.name));
+  }
+  else
+  {
+    Serial.print(song.name);
+  }
   Serial.print(F("\" mit "));
   Serial.print(song.bpm);
   Serial.print(F(" BPM im "));
@@ -631,6 +652,40 @@ void playSong(const Song &song)
   servoSchlaegel.detach();
 }
 
+bool playPlaylistSong(size_t playlistIndex)
+{
+  if (playlistIndex >= PLAYLIST_SIZE)
+  {
+    return false;
+  }
+
+  const char *name = reinterpret_cast<const char *>(
+      pgm_read_ptr(&PLAYLIST[playlistIndex].name));
+  const char *notation = reinterpret_cast<const char *>(
+      pgm_read_ptr(&PLAYLIST[playlistIndex].notation));
+
+  size_t notationLength = strlen_P(notation);
+  if (notationLength >= terminalBufferSize)
+  {
+    Serial.println(F("Fehler: Playlist-Eintrag ist zu lang."));
+    return false;
+  }
+
+  strcpy_P(terminalBuffer, notation);
+
+  Song song;
+  if (!parseTerminalSong(terminalBuffer, song))
+  {
+    Serial.println(F("Fehler: Ungueltiger Playlist-Eintrag."));
+    return false;
+  }
+
+  song.name = name;
+  song.nameInProgramMemory = true;
+  playSong(song);
+  return true;
+}
+
 /**
  * loop() wird in einer Schleife aufgerufen, solange der Arduino Strom hat
  */
@@ -644,16 +699,7 @@ void loop()
   // Überprüfen, ob der Drucktaster gedrückt ist. Wenn dies der Fall ist, ist der ButtonState auf HIGH
   if (buttonState == HIGH)
   {
-    if (g_arrSongs[g_iCurrentSong] != NULL)
-    {
-      playSong(*g_arrSongs[g_iCurrentSong]);
-      g_iCurrentSong++;
-    }
-    else
-    {
-      g_iCurrentSong = 0;
-      playSong(*g_arrSongs[g_iCurrentSong]);
-      g_iCurrentSong++;
-    }
+    playPlaylistSong(g_iCurrentSong);
+    g_iCurrentSong = (g_iCurrentSong + 1) % PLAYLIST_SIZE;
   }
 }
