@@ -121,21 +121,21 @@ size_t terminalBufferPosition = 0;
 void printTerminalHelp()
 {
   Serial.println(F("UART-Diagnose:"));
-  Serial.println(F("  servo 1 <0-180>  Horizontalservo (Pin 10)"));
-  Serial.println(F("  servo 2 <0-180>  Vertikalservo (Pin 9)"));
+  Serial.println(F("  d <0-180>         Drehservo (Pin 10)"));
+  Serial.println(F("  k <0-180>         Kloeppelservo (Pin 9)"));
   Serial.println(F("  p<folge>           Lied spielen, z.B. pa3c1d2"));
   Serial.println(F("  play <folge>       Alternative: play a3c1d2"));
   Serial.println(F("    Noten: c d e f g a b/h, hohes C: C"));
   Serial.println(F("    Pausen: 1 bis 7"));
   Serial.println(F("  status             Servozustand anzeigen"));
-  Serial.println(F("  detach <1|2|all>   Servo(s) abschalten"));
+  Serial.println(F("  detach <d|k|all>   Servo(s) abschalten"));
   Serial.println(F("  help               Hilfe anzeigen"));
 }
 
-void printServoStatus(uint8_t servoNumber, Servo &servo, int pin)
+void printServoStatus(char servoCommand, Servo &servo, int pin)
 {
   Serial.print(F("Servo "));
-  Serial.print(servoNumber);
+  Serial.print(servoCommand);
   Serial.print(F(": Pin "));
   Serial.print(pin);
   Serial.print(F(", Winkel "));
@@ -144,15 +144,15 @@ void printServoStatus(uint8_t servoNumber, Servo &servo, int pin)
   Serial.println(servo.attached() ? F("aktiv") : F("abgeschaltet"));
 }
 
-Servo *getServo(uint8_t servoNumber, int &pin)
+Servo *getServo(char servoCommand, int &pin)
 {
-  if (servoNumber == 1)
+  if (servoCommand == 'd')
   {
     pin = pinServoDrehung;
     return &servoDrehung;
   }
 
-  if (servoNumber == 2)
+  if (servoCommand == 'k')
   {
     pin = pinServoSchlaegel;
     return &servoSchlaegel;
@@ -291,8 +291,8 @@ void processTerminalCommand(char *command)
 
   if (strcmp(commandName, "status") == 0)
   {
-    printServoStatus(1, servoDrehung, pinServoDrehung);
-    printServoStatus(2, servoSchlaegel, pinServoSchlaegel);
+    printServoStatus('d', servoDrehung, pinServoDrehung);
+    printServoStatus('k', servoSchlaegel, pinServoSchlaegel);
     return;
   }
 
@@ -333,30 +333,22 @@ void processTerminalCommand(char *command)
     return;
   }
 
-  if (strcmp(commandName, "servo") == 0)
+  if (strcmp(commandName, "d") == 0 || strcmp(commandName, "k") == 0)
   {
-    char *servoText = strtok(NULL, " \t");
     char *angleText = strtok(NULL, " \t");
     char *extraText = strtok(NULL, " \t");
 
-    if (servoText == NULL || angleText == NULL || extraText != NULL)
+    if (angleText == NULL || extraText != NULL)
     {
-      Serial.println(F("Fehler: Verwendung: servo <1|2> <0-180>"));
+      Serial.println(F("Fehler: Verwendung: d <0-180> oder k <0-180>"));
       return;
     }
 
-    char *servoEnd;
     char *angleEnd;
-    long servoNumber = strtol(servoText, &servoEnd, 10);
     long angle = strtol(angleText, &angleEnd, 10);
 
     int pin = 0;
-    Servo *servo = getServo(servoNumber, pin);
-    if (*servoEnd != '\0' || servo == NULL)
-    {
-      Serial.println(F("Fehler: Servonummer muss 1 oder 2 sein."));
-      return;
-    }
+    Servo *servo = getServo(commandName[0], pin);
 
     if (*angleEnd != '\0' || angle < 0 || angle > 180)
     {
@@ -371,7 +363,7 @@ void processTerminalCommand(char *command)
     servo->write(angle);
 
     Serial.print(F("OK: Servo "));
-    Serial.print(servoNumber);
+    Serial.print(commandName);
     Serial.print(F(" faehrt auf "));
     Serial.print(angle);
     Serial.println(F(" Grad."));
@@ -384,7 +376,7 @@ void processTerminalCommand(char *command)
     char *extraText = strtok(NULL, " \t");
     if (servoText == NULL || extraText != NULL)
     {
-      Serial.println(F("Fehler: Verwendung: detach <1|2|all>"));
+      Serial.println(F("Fehler: Verwendung: detach <d|k|all>"));
       return;
     }
 
@@ -396,19 +388,17 @@ void processTerminalCommand(char *command)
       return;
     }
 
-    char *servoEnd;
-    long servoNumber = strtol(servoText, &servoEnd, 10);
     int pin = 0;
-    Servo *servo = getServo(servoNumber, pin);
-    if (*servoEnd != '\0' || servo == NULL)
+    Servo *servo = strlen(servoText) == 1 ? getServo(servoText[0], pin) : NULL;
+    if (servo == NULL)
     {
-      Serial.println(F("Fehler: Servonummer muss 1 oder 2 sein."));
+      Serial.println(F("Fehler: Servo muss d oder k sein."));
       return;
     }
 
     servo->detach();
     Serial.print(F("OK: Servo "));
-    Serial.print(servoNumber);
+    Serial.print(servoText);
     Serial.println(F(" abgeschaltet."));
     return;
   }
