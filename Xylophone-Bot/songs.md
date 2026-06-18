@@ -1,0 +1,12 @@
+## Alle meine Entchen
+pc1d1e1f1g4a1a1a1a1g44a1a1a1a1g4f1f1f1fe4e4d2d2dc
+
+## Freude schöner Götterfunke
+peefggfedccdeedd44eefggfedccdedcc44ddecdeffecdeffedcdg44eefggfedccdedcc77
+
+# Thunderstruck?
+pdbfbebfbdbfbebfbdbfbebfbdbfbebfb4
+
+# Hänschen Klein
+pgee4fdd4cdef4ggg6gee4fdd4cegg4ccc7
+
