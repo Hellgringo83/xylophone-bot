@@ -40,53 +40,69 @@ const int iC1 = 60;
 int16_t g_arrNote[NOTE_LAST];
 
 /**
- * Variable zum Speichern des Tempo/Taktes
- * Diese wird zur Laufzeit überschrieben mit dem tempo aus dem Melodie-Array
- */
-int takt = 100;
-
-/**
- * spezielle Note, welche eine Pause repräsentiert
- */
-const int PAUSE_1 = 1010;
-const int PAUSE_2 = 1020;
-const int PAUSE_3 = 1030;
-const int PAUSE_4 = 1040;
-const int PAUSE_5 = 1050;
-const int PAUSE_6 = 1060;
-const int PAUSE_7 = 1070;
-
-const int ENDE = 9999;
-
-// Deutlich unterscheidbare Pausen fuer die Terminal-Melodien.
-int pause_1 = 100;
-int pause_2 = 200;
-int pause_3 = 300;
-int pause_4 = 450;
-int pause_5 = 600;
-int pause_6 = 800;
-int pause_7 = 1200;
-
-/**
- * Array mit Noten = Melodie
+ * Musikalisches Liedformat.
  *
- * An erster Stelle steht das Tempo/der Takt
+ * Der Notenwert ist der Nenner der Notenlaenge:
+ *   1 = ganze Note, 2 = halbe, 4 = Viertel, 8 = Achtel, 16 = Sechzehntel
+ *
+ * BPM bezieht sich auf den unteren Wert der Taktart. Bei 4/4 sind es also
+ * Viertelschlaege pro Minute, bei 3/8 Achtelschlaege pro Minute.
  */
-// Test
-int TEST[] = {300, C, D, E, F, G, A, B, C1, ENDE};
+const int8_t REST = -1;
+
+struct NoteEvent
+{
+  int8_t note;
+  uint8_t length;
+};
+
+struct Song
+{
+  const char *name;
+  uint16_t bpm;
+  uint8_t beatsPerMeasure;
+  uint8_t beatUnit;
+  const NoteEvent *events;
+  size_t eventCount;
+};
+
+#define NOTE(tone, length) { tone, length }
+#define PAUSE(length) { REST, length }
+#define EVENT_COUNT(events) (sizeof(events) / sizeof(events[0]))
 
 // Melodie: Star Wars Imperial March, Part 1
-int MARSCH[] = {250, E, E, E, C, G, E, C, G, E, PAUSE_4, B, B, B, C1, G, E, C, G, E, ENDE};
+const NoteEvent MARSCH_NOTES[] = {
+    NOTE(E, 4), NOTE(E, 4), NOTE(E, 4),
+    NOTE(C, 8), NOTE(G, 8), NOTE(E, 4), NOTE(C, 8), NOTE(G, 8), NOTE(E, 2),
+    PAUSE(4),
+    NOTE(B, 4), NOTE(B, 4), NOTE(B, 4),
+    NOTE(C1, 8), NOTE(G, 8), NOTE(E, 4), NOTE(C, 8), NOTE(G, 8), NOTE(E, 2)};
 
-// Scooter
-int SCOOTER[] = {50, E, PAUSE_2, H, PAUSE_2, E, PAUSE_2, H, A, G, PAUSE_2, G, PAUSE_2, G, PAUSE_4, H, G, PAUSE_2, H, PAUSE_2, G, PAUSE_2, H, G, E, PAUSE_2, E, PAUSE_2, E, ENDE};
-
-int NARCOTIC[] = {1000, E, PAUSE_2, D, PAUSE_2, E, PAUSE_2, D, PAUSE_2, E, PAUSE_2, D, PAUSE_2, E, PAUSE_2, D, ENDE};
+const NoteEvent SCOOTER_NOTES[] = {
+    NOTE(E, 8), PAUSE(8), NOTE(H, 8), PAUSE(8), NOTE(E, 8), PAUSE(8),
+    NOTE(H, 8), NOTE(A, 8), NOTE(G, 8), PAUSE(8),
+    NOTE(G, 8), PAUSE(8), NOTE(G, 8), PAUSE(4),
+    NOTE(H, 8), NOTE(G, 8), PAUSE(8), NOTE(H, 8), PAUSE(8),
+    NOTE(G, 8), PAUSE(8), NOTE(H, 8), NOTE(G, 8), NOTE(E, 8),
+    PAUSE(8), NOTE(E, 8), PAUSE(8), NOTE(E, 4)};
 
 // Star Wars Intro, Part 1
-int START_WARS[] = {10, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, PAUSE_7, D, D, D, D, D, D, C, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, D, C1, PAUSE_6, G, PAUSE_6, F, E, F, D, ENDE};
+const NoteEvent STAR_WARS_NOTES[] = {
+    NOTE(C, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4), NOTE(E, 4),
+    NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4),
+    NOTE(E, 4), NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2),
+    NOTE(F, 4), NOTE(E, 4), NOTE(F, 4), NOTE(D, 2), PAUSE(1),
+    NOTE(D, 8), NOTE(D, 8), NOTE(D, 8), NOTE(D, 8), NOTE(D, 8), NOTE(D, 8),
+    NOTE(C, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4), NOTE(E, 4),
+    NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2), NOTE(F, 4),
+    NOTE(E, 4), NOTE(D, 4), NOTE(C1, 4), PAUSE(2), NOTE(G, 4), PAUSE(2),
+    NOTE(F, 4), NOTE(E, 4), NOTE(F, 4), NOTE(D, 2)};
 
-int *g_arrSongs[] = {MARSCH, SCOOTER, START_WARS, NULL};
+const Song MARSCH = {"Imperial March", 120, 4, 4, MARSCH_NOTES, EVENT_COUNT(MARSCH_NOTES)};
+const Song SCOOTER = {"Scooter", 120, 4, 4, SCOOTER_NOTES, EVENT_COUNT(SCOOTER_NOTES)};
+const Song STAR_WARS = {"Star Wars Intro", 110, 4, 4, STAR_WARS_NOTES, EVENT_COUNT(STAR_WARS_NOTES)};
+
+const Song *g_arrSongs[] = {&MARSCH, &SCOOTER, &STAR_WARS, NULL};
 int g_iCurrentSong = 0;
 
 /**
@@ -97,6 +113,11 @@ const int pauseWinkelDrehung = 90;
 
 const int startWinkelSchlaegel = 98;
 const int schlagWinkelSchlaegel = 22;
+const uint16_t notePositionTimeMs = 150;
+const uint16_t hammerDownTimeMs = 80;
+const uint16_t hammerReturnTimeMs = 20;
+const uint16_t noteStrikeTimeMs =
+    notePositionTimeMs + hammerDownTimeMs + hammerReturnTimeMs;
 
 /**
  * Initialisieren der Servo-Motoren
@@ -115,6 +136,8 @@ const int buttonPin = 2;
 const size_t terminalBufferSize = 128;
 char terminalBuffer[terminalBufferSize];
 size_t terminalBufferPosition = 0;
+const size_t terminalEventCapacity = 56;
+NoteEvent terminalEvents[terminalEventCapacity];
 
 /**
  * Eigene Funktionen
@@ -125,10 +148,11 @@ void printTerminalHelp()
   Serial.println(F("UART-Diagnose:"));
   Serial.println(F("  d <0-180>         Drehservo (Pin 10)"));
   Serial.println(F("  s <0-180>         Schlaegelservo (Pin 9)"));
-  Serial.println(F("  p<folge>           Lied spielen, z.B. pa3c1d2"));
-  Serial.println(F("  play <folge>       Alternative: play a3c1d2"));
-  Serial.println(F("    Noten: c d e f g a b/h, hohes C: C"));
-  Serial.println(F("    Pausen: 1 bis 7"));
+  Serial.println(F("  play BPM,TAKT,NOTEN"));
+  Serial.println(F("    z.B. play 120,4/4,c4d4e8r8C2"));
+  Serial.println(F("    Kurzform: p120,4/4,c4d4e8r8C2"));
+  Serial.println(F("    Noten: c d e f g a b/h, hohes C: C, Pause: r"));
+  Serial.println(F("    Laengen: 1, 2, 4, 8 oder 16"));
   Serial.println(F("  status             Servozustand anzeigen"));
   Serial.println(F("  detach <d|s|all>   Servo(s) abschalten"));
   Serial.println(F("  help               Hilfe anzeigen"));
@@ -164,6 +188,7 @@ Servo *getServo(char servoCommand, int &pin)
 }
 
 void spieleTon(int ton);
+void playSong(const Song &song);
 
 int noteFromCharacter(char character)
 {
@@ -194,87 +219,83 @@ int noteFromCharacter(char character)
   }
 }
 
-void spielePause(uint8_t pauseNumber)
+bool isValidNoteLength(long length)
 {
-  switch (pauseNumber)
-  {
-  case 1:
-    delay(pause_1);
-    break;
-  case 2:
-    delay(pause_2);
-    break;
-  case 3:
-    delay(pause_3);
-    break;
-  case 4:
-    delay(pause_4);
-    break;
-  case 5:
-    delay(pause_5);
-    break;
-  case 6:
-    delay(pause_6);
-    break;
-  case 7:
-    delay(pause_7);
-    break;
-  }
+  return length == 1 || length == 2 || length == 4 ||
+         length == 8 || length == 16;
 }
 
-bool isValidMelody(const char *melody)
+bool parseTerminalSong(const char *notation, Song &song)
 {
-  if (melody == NULL || *melody == '\0')
+  if (notation == NULL || *notation == '\0')
   {
     return false;
   }
 
-  while (*melody != '\0')
+  char *end;
+  long bpm = strtol(notation, &end, 10);
+  if (end == notation || *end != ',' || bpm < 1 || bpm > 999)
   {
-    if (noteFromCharacter(*melody) < 0 &&
-        (*melody < '1' || *melody > '7'))
+    return false;
+  }
+
+  const char *position = end + 1;
+  long beatsPerMeasure = strtol(position, &end, 10);
+  if (end == position || *end != '/' ||
+      beatsPerMeasure < 1 || beatsPerMeasure > 32)
+  {
+    return false;
+  }
+
+  position = end + 1;
+  long beatUnit = strtol(position, &end, 10);
+  if (end == position || *end != ',' || !isValidNoteLength(beatUnit))
+  {
+    return false;
+  }
+
+  position = end + 1;
+  size_t eventCount = 0;
+
+  while (*position != '\0')
+  {
+    if (eventCount >= terminalEventCapacity)
     {
       return false;
     }
-    melody++;
+
+    bool isRest = *position == 'r' || *position == 'R';
+    int note = isRest ? REST : noteFromCharacter(*position);
+    if (!isRest && note < 0)
+    {
+      return false;
+    }
+
+    position++;
+    long length = strtol(position, &end, 10);
+    if (end == position || !isValidNoteLength(length))
+    {
+      return false;
+    }
+
+    terminalEvents[eventCount].note = note;
+    terminalEvents[eventCount].length = length;
+    eventCount++;
+    position = end;
   }
 
-  return true;
-}
-
-void playTerminalMelody(const char *melody)
-{
-  servoDrehung.attach(pinServoDrehung);
-  servoSchlaegel.attach(pinServoSchlaegel);
-
-  servoDrehung.write(pauseWinkelDrehung);
-  servoSchlaegel.write(startWinkelSchlaegel);
-  delay(500);
-
-  Serial.print(F("Spiele: "));
-  Serial.println(melody);
-
-  while (*melody != '\0')
+  if (eventCount == 0)
   {
-    int note = noteFromCharacter(*melody);
-    if (note >= 0)
-    {
-      spieleTon(note);
-    }
-    else
-    {
-      spielePause(*melody - '0');
-    }
-    melody++;
+    return false;
   }
 
-  servoDrehung.write(pauseWinkelDrehung);
-  servoSchlaegel.write(pauseWinkelSchlaegel);
-  delay(500);
-  servoDrehung.detach();
-  servoSchlaegel.detach();
-
-  Serial.println(F("Lied beendet."));
+  song.name = "Terminal";
+  song.bpm = bpm;
+  song.beatsPerMeasure = beatsPerMeasure;
+  song.beatUnit = beatUnit;
+  song.events = terminalEvents;
+  song.eventCount = eventCount;
+  return true;
 }
 
 void processTerminalCommand(char *command)
@@ -318,20 +339,22 @@ void processTerminalCommand(char *command)
 
   if (melody != NULL)
   {
-    if (!isValidMelody(melody))
+    Song terminalSong;
+    if (!parseTerminalSong(melody, terminalSong))
     {
-      Serial.println(F("Fehler: Noten c,d,e,f,g,a,b/h,C und Pausen 1-7 erlaubt."));
+      Serial.println(F("Fehler: Format BPM,TAKT,NOTEN erwartet."));
+      Serial.println(F("Beispiel: play 120,4/4,c4d4e8r8C2"));
       return;
     }
 
-    playTerminalMelody(melody);
+    playSong(terminalSong);
     return;
   }
 
   if (strcmp(commandName, "play") == 0 ||
       (commandName[0] == 'p' && commandName[1] != '\0'))
   {
-    Serial.println(F("Fehler: Verwendung: pa3c1d2 oder play a3c1d2"));
+    Serial.println(F("Fehler: Verwendung: play 120,4/4,c4d4e8r8C2"));
     return;
   }
 
@@ -457,13 +480,13 @@ void spieleTon(int ton)
   servoDrehung.write(g_arrNote[ton]);
 
   // delay(abs(ton - aktuellerWinkel) * 6);
-  delay(150);
+  delay(notePositionTimeMs);
 
   // Note anschlagen
   servoSchlaegel.write(startWinkelSchlaegel - schlagWinkelSchlaegel);
-  delay(80);
+  delay(hammerDownTimeMs);
   servoSchlaegel.write(startWinkelSchlaegel);
-  delay(20);
+  delay(hammerReturnTimeMs);
 }
 
 void spieleEnde()
@@ -516,7 +539,27 @@ void setup()
   }
 }
 
-void playSong(int *pSong)
+uint32_t noteDurationMs(const Song &song, uint8_t noteLength)
+{
+  if (song.bpm == 0 || noteLength == 0)
+  {
+    return 0;
+  }
+
+  // Dauer = Dauer eines Taktschlags * Verhaeltnis Taktnote zu Notenwert.
+  return (60000UL * song.beatUnit) / ((uint32_t)song.bpm * noteLength);
+}
+
+void waitUntilEventEnds(uint32_t eventStart, uint32_t duration)
+{
+  uint32_t elapsed = millis() - eventStart;
+  if (elapsed < duration)
+  {
+    delay(duration - elapsed);
+  }
+}
+
+void playSong(const Song &song)
 {
   // Servos zu den Arduino Pins zuordnen
   servoDrehung.attach(pinServoDrehung);
@@ -531,54 +574,46 @@ void playSong(int *pSong)
     delay(15);
   }
 
-  takt = pSong[0]; // erster Wert im Array
-
   delay(500);
 
-  int position = 1;
-  while (pSong[position] != ENDE)
+  Serial.print(F("Spiele \""));
+  Serial.print(song.name);
+  Serial.print(F("\" mit "));
+  Serial.print(song.bpm);
+  Serial.print(F(" BPM im "));
+  Serial.print(song.beatsPerMeasure);
+  Serial.print('/');
+  Serial.print(song.beatUnit);
+  Serial.println(F("-Takt."));
+
+  bool timingWarningPrinted = false;
+  for (size_t position = 0; position < song.eventCount; position++)
   {
-    int ton = pSong[position];
+    const NoteEvent &event = song.events[position];
+    uint32_t duration = noteDurationMs(song, event.length);
+    uint32_t eventStart = millis();
 
-    if (ton == PAUSE_1)
+    if (event.note != REST)
     {
-      delay(pause_1);
-    }
-    else if (ton == PAUSE_2)
-    {
-      delay(pause_2);
-    }
-    else if (ton == PAUSE_3)
-    {
-      delay(pause_3);
-    }
-    else if (ton == PAUSE_4)
-    {
-      delay(pause_4);
-    }
-    else if (ton == PAUSE_5)
-    {
-      delay(pause_5);
-    }
-    else if (ton == PAUSE_6)
-    {
-      delay(pause_6);
-    }
-    else if (ton == PAUSE_7)
-    {
-      delay(pause_7);
-    }
-    else
-    {
+      if (!timingWarningPrinted && duration < noteStrikeTimeMs)
+      {
+        Serial.print(F("Warnung: Eine Note dauert nur "));
+        Serial.print(duration);
+        Serial.print(F(" ms, die Servos brauchen mindestens "));
+        Serial.print(noteStrikeTimeMs);
+        Serial.println(F(" ms. BPM senken oder laengere Noten verwenden."));
+        timingWarningPrinted = true;
+      }
 
-      spieleTon(ton);
-
-      delay(takt);
+      spieleTon(event.note);
     }
-    position++;
+
+    // spieleTon() braucht selbst Zeit. Nur die noch fehlende Zeit warten,
+    // damit die Abstaende zwischen den Anschlaegen musikalisch korrekt sind.
+    waitUntilEventEnds(eventStart, duration);
   }
 
-  delay(pause_7);
+  delay(noteDurationMs(song, song.beatUnit));
 
   spieleEnde();
 
@@ -611,13 +646,13 @@ void loop()
   {
     if (g_arrSongs[g_iCurrentSong] != NULL)
     {
-      playSong(g_arrSongs[g_iCurrentSong]);
+      playSong(*g_arrSongs[g_iCurrentSong]);
       g_iCurrentSong++;
     }
     else
     {
       g_iCurrentSong = 0;
-      playSong(g_arrSongs[g_iCurrentSong]);
+      playSong(*g_arrSongs[g_iCurrentSong]);
       g_iCurrentSong++;
     }
   }
